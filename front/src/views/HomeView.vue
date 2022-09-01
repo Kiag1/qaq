@@ -6,7 +6,7 @@
     </div>
     <!--    按钮-->
     <div style="margin: 10px 0;">
-      <el-input v-model="search" placeholder="请输入需要搜寻的内容"></el-input>
+      <el-input v-model="search" clearable placeholder="请输入需要搜寻的内容"></el-input>
       <el-button style="" @click="load">确定</el-button>
     </div>
     <!--    表格-->
@@ -47,6 +47,34 @@
 
     <!--    增加信息-->
     <el-dialog title="" v-model="dialogVisible" width="30%">
+      <el-form :model="updatefrom" label-width="120px">
+        <el-form-item label="姓名">
+          <el-input v-model="updatefrom.name" style="width: 180px"/>
+        </el-form-item>
+        <el-form-item label="学院">
+          <el-input v-model="updatefrom.department" style="width: 180px"/>
+        </el-form-item>
+        <el-form-item label="学号">
+          <el-input v-model="updatefrom.id" style="width: 180px"/>
+        </el-form-item>
+        <el-form-item label="时长">
+          <el-input v-model="updatefrom.stime" style="width: 180px"/>
+        </el-form-item>
+        <el-form-item label="日期">
+          <el-input v-model="updatefrom.tt" style="width: 180px"/>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="save">确定</el-button>
+        </span>
+      </template>
+    </el-dialog>
+    <!--    增加信息-->
+
+    <!--    更新信息-->
+    <el-dialog title="请输入更新的信息" v-model="dVisible" width="30%">
       <el-form :model="form" label-width="120px">
         <el-form-item label="姓名">
           <el-input v-model="form.name" style="width: 180px"/>
@@ -66,13 +94,12 @@
       </el-form>
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="save">确定</el-button>
+          <el-button @click="dVisible = false">取消</el-button>
+          <el-button type="primary" @click="update">更新</el-button>
         </span>
       </template>
     </el-dialog>
-    <!--    增加信息-->
-
+    <!--更新信息-->
   </div>
 </template>
 
@@ -86,6 +113,7 @@ export default {
   components: {},
   data() {
     return {
+      dVisible: false,
       currentPage4: 1,
       pageSize4: 10,
       tableData: [],
@@ -93,6 +121,7 @@ export default {
       search: '',
       dialogVisible: false,
       form: {},
+      updatefrom: {},
     }
   },
   created() {
@@ -100,12 +129,6 @@ export default {
   },
   methods: {
     load() { //加载基础表格
-      // axios({
-      //   url: "http://localhost:9090/student",
-      //   methods: "POST",
-      // }).then(res => {
-      //   this.tableData = res.data
-      // })
       axios.get("http://localhost:9090/findpage", {
         params: {
           pageNum: this.currentPage4,
@@ -120,20 +143,33 @@ export default {
         // this.pageSize4 = res.data.totalPage
       })
     },
+
     handleEdit(row) {
-      this.from = JSON.parse(JSON.stringify(row))
-      this.dialogVisible = true
-      axios.post("http://localhost:9090/update").then(res => {
-        console.log(res)
-      })
+      this.updatefrom = JSON.parse(JSON.stringify(row))
+      this.dVisible = true
     },
+
     handleDelete() {
-      axios.post("http://localhost:9090/delete").then(res => {
+      axios.post("http://localhost:9090/delete", this.from).then(res => {
         console.log(res)
       })
     },
+
     add() {
       this.dialogVisible = true;
+    },
+    update() {
+      axios.post("http://localhost:9090/update", this.updatefrom).then(res => {
+        console.log(res)
+        if (res.data.success === true) {
+          this.$message({
+            type: "success",
+            message: "更新成功!"
+          })
+        }
+        this.dVisible = false
+        this.from = {}
+      })
     },
     save() { //为表格中新增信息
       let that = this
@@ -152,7 +188,6 @@ export default {
           })
         }
       })
-      // 新增
       this.form = {}
       this.dialogVisible = false
     }

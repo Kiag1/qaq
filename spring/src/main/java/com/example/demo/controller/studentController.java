@@ -49,13 +49,33 @@ public class studentController {
     }
 
     @PostMapping("/delete")
-    public void deleteStudent(@RequestBody Student student) {
-        studentMapper.deleteById(student);
+    public Result<Student> deleteStudent(@RequestBody Student student) {
+        QueryWrapper<Student> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id", student.getId()).last("limit 1");
+        Long i = studentMapper.selectCount(queryWrapper);
+        if (i != 1) {
+            return new Result<>(false, null, student);
+        } else {
+            studentMapper.deleteById(student);
+            return new Result<>(true, null, student);
+        }
     }
 
     @PostMapping("/update")
-    public void updateStudent(@RequestBody Student student) {
-        studentMapper.updateById(student);
+    public Result<Student> updateStudent(@RequestBody Student student) {
+        QueryWrapper<Student> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id", student.getId()).last("limit 1"); //判断是否数据库中是否存在该数据
+        Long i = studentMapper.selectCount(queryWrapper);
+        if (i != 1) {
+            return new Result<>(false, null, student);
+        } else {
+            studentMapper.updateById(student);
+            String msg = student.getId();
+            if (msg != null) {
+                return new Result<>(true, msg, student);
+            }
+        }
+        return new Result<>(false, null, student);
     }
 
     @GetMapping("/findpage") //分页返回表格
