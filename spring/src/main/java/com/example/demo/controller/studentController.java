@@ -54,10 +54,10 @@ public class studentController {
         queryWrapper.eq("id", student.getId()).last("limit 1");
         Long i = studentMapper.selectCount(queryWrapper);
         if (i != 1) {
-            return new Result<>(false, null, student);
+            return new Result<>(false, "不存在该信息", null);
         } else {
             studentMapper.deleteById(student);
-            return new Result<>(true, null, student);
+            return new Result<>(true, "删除成功", null);
         }
     }
 

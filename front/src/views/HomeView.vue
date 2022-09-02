@@ -20,11 +20,7 @@
         <el-table-column align="right">
           <template #default="scope">
             <el-button size="small" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-popconfirm title="确定删除吗?">
-              <template #reference>
-                <el-button @click="handleDelete" size="small">Delete</el-button>
-              </template>
-            </el-popconfirm>
+            <el-button size="small" @click="handleDelete(scope.row)">Delete</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -47,34 +43,6 @@
 
     <!--    增加信息-->
     <el-dialog title="" v-model="dialogVisible" width="30%">
-      <el-form :model="updatefrom" label-width="120px">
-        <el-form-item label="姓名">
-          <el-input v-model="updatefrom.name" style="width: 180px"/>
-        </el-form-item>
-        <el-form-item label="学院">
-          <el-input v-model="updatefrom.department" style="width: 180px"/>
-        </el-form-item>
-        <el-form-item label="学号">
-          <el-input v-model="updatefrom.id" style="width: 180px"/>
-        </el-form-item>
-        <el-form-item label="时长">
-          <el-input v-model="updatefrom.stime" style="width: 180px"/>
-        </el-form-item>
-        <el-form-item label="日期">
-          <el-input v-model="updatefrom.tt" style="width: 180px"/>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="save">确定</el-button>
-        </span>
-      </template>
-    </el-dialog>
-    <!--    增加信息-->
-
-    <!--    更新信息-->
-    <el-dialog title="请输入更新的信息" v-model="dVisible" width="30%">
       <el-form :model="form" label-width="120px">
         <el-form-item label="姓名">
           <el-input v-model="form.name" style="width: 180px"/>
@@ -90,6 +58,34 @@
         </el-form-item>
         <el-form-item label="日期">
           <el-input v-model="form.tt" style="width: 180px"/>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="save">确定</el-button>
+        </span>
+      </template>
+    </el-dialog>
+    <!--    增加信息-->
+
+    <!--    更新信息-->
+    <el-dialog title="请输入更新的信息" v-model="dVisible" width="30%">
+      <el-form :model="updatefrom" label-width="120px">
+        <el-form-item label="姓名">
+          <el-input v-model="updatefrom.name" style="width: 180px"/>
+        </el-form-item>
+        <el-form-item label="学院">
+          <el-input v-model="updatefrom.department" style="width: 180px"/>
+        </el-form-item>
+        <el-form-item label="学号">
+          <el-input v-model="updatefrom.id" style="width: 180px"/>
+        </el-form-item>
+        <el-form-item label="时长">
+          <el-input v-model="updatefrom.stime" style="width: 180px"/>
+        </el-form-item>
+        <el-form-item label="日期">
+          <el-input v-model="updatefrom.tt" style="width: 180px"/>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -122,6 +118,7 @@ export default {
       dialogVisible: false,
       form: {},
       updatefrom: {},
+      deletefrom: {},
     }
   },
   created() {
@@ -149,10 +146,24 @@ export default {
       this.dVisible = true
     },
 
-    handleDelete() {
-      axios.post("http://localhost:9090/delete", this.from).then(res => {
+    handleDelete(row) {
+      this.deletefrom = JSON.parse(JSON.stringify(row))
+      axios.post("http://localhost:9090/delete", this.deletefrom).then(res => {
         console.log(res)
+        if (res.data.success === true) {
+          this.$message({
+            type: "success",
+            message: "删除成功!"
+          })
+        } else {
+          this.$message({
+            type: "false",
+            message: res.data.msg
+          })
+        }
       })
+      this.deletefrom = {}
+      this.load()
     },
 
     add() {
@@ -166,10 +177,15 @@ export default {
             type: "success",
             message: "更新成功!"
           })
+        } else {
+          this.$message({
+            type: "false",
+            message: "由于学号不能更改,更新失败！"
+          })
         }
-        this.dVisible = false
-        this.from = {}
       })
+      this.dVisible = false
+      this.updatefrom = {}
     },
     save() { //为表格中新增信息
       let that = this
@@ -190,6 +206,7 @@ export default {
       })
       this.form = {}
       this.dialogVisible = false
+      this.load()
     }
   }
 }

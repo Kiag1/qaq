@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.demo.common.Result;
 import com.example.demo.entity.Student;
@@ -17,11 +18,20 @@ class DemoApplicationTests {
 	private StudentMapper studentMapper;
 	@Test
 	void contextLoads() {
-		Page<Student> page = new Page<>(1, 5);
-		studentMapper.selectPage(page, null);
-		System.out.println("size: " + page.getSize());
-		System.out.println("total: " + page.getTotal());
-		System.out.println("pages: " + page.getPages());
-
+		Student student = new Student("黄连东", "8", "2007310308", 59, "2021-10-24");
+		QueryWrapper<Student> queryWrapper = new QueryWrapper<>();
+		queryWrapper.eq("id", student.getId()).last("limit 1"); //判断是否数据库中是否存在该数据
+		Long i = studentMapper.selectCount(queryWrapper);
+		Result<Student> results = null;
+		if (i != 1) {
+			System.out.println(new Result<>(false, null, student));
+		} else {
+			studentMapper.updateById(student);
+			String msg = student.getId();
+			if (msg != null) {
+				results = new Result<>(true, msg, student);
+			}
+		}
+		System.out.println(new Result<>(false, null, student));
 	}
 }
